@@ -1,0 +1,957 @@
+{
+  "meta": {
+    "app_name": "build_a_crm_system_with_login_contacts_manageme",
+    "description": "Deterministically generated crm application from natural language prompt.",
+    "assumptions": [
+      "Payments and invoices are excluded unless the prompt asks for them."
+    ],
+    "clarification_needed": []
+  },
+  "architecture": {
+    "entities": [
+      "contact",
+      "companie"
+    ],
+    "modules": [
+      "auth",
+      "dashboard",
+      "contacts",
+      "companies"
+    ],
+    "flows": [
+      "prompt -> intent_extraction",
+      "intent_extraction -> system_design",
+      "system_design -> schema_generation",
+      "schema_generation -> validation_and_repair",
+      "validation_and_repair -> artifact_generation"
+    ]
+  },
+  "ui": {
+    "pages": [
+      {
+        "name": "login_page",
+        "components": [
+          "login_form",
+          "app_logo",
+          "forgot_password_link",
+          "register_link"
+        ],
+        "api_connections": [
+          "POST /api/auth/login"
+        ]
+      },
+      {
+        "name": "register_page",
+        "components": [
+          "register_form",
+          "app_logo",
+          "login_link"
+        ],
+        "api_connections": [
+          "POST /api/auth/register"
+        ]
+      },
+      {
+        "name": "dashboard_page",
+        "components": [
+          "kpi_cards",
+          "deal_pipeline_chart",
+          "recent_activities_list",
+          "revenue_chart",
+          "payment_summary_widget"
+        ],
+        "api_connections": [
+          "GET /api/dashboard/stats",
+          "GET /api/dashboard/recent_activities",
+          "GET /api/dashboard/pipeline",
+          "GET /api/dashboard/revenue"
+        ]
+      },
+      {
+        "name": "contacts_list_page",
+        "components": [
+          "contacts_table",
+          "search_bar",
+          "filter_panel",
+          "add_contact_button",
+          "pagination"
+        ],
+        "api_connections": [
+          "GET /api/contacts",
+          "DELETE /api/contacts/{id}"
+        ]
+      },
+      {
+        "name": "contact_detail_page",
+        "components": [
+          "contact_info_card",
+          "contact_edit_form",
+          "related_activities_list",
+          "related_deals_list",
+          "notes_section"
+        ],
+        "api_connections": [
+          "GET /api/contacts/{id}",
+          "PUT /api/contacts/{id}",
+          "POST /api/notes"
+        ]
+      },
+      {
+        "name": "companies_list_page",
+        "components": [
+          "companies_table",
+          "search_bar",
+          "filter_panel",
+          "add_company_button",
+          "pagination"
+        ],
+        "api_connections": [
+          "GET /api/companies",
+          "DELETE /api/companies/{id}"
+        ]
+      },
+      {
+        "name": "company_detail_page",
+        "components": [
+          "company_info_card",
+          "company_edit_form",
+          "associated_contacts_list",
+          "related_deals_list"
+        ],
+        "api_connections": [
+          "GET /api/companies/{id}",
+          "PUT /api/companies/{id}"
+        ]
+      },
+      {
+        "name": "deals_list_page",
+        "components": [
+          "deals_kanban_board",
+          "deals_table_view",
+          "search_bar",
+          "filter_panel",
+          "add_deal_button"
+        ],
+        "api_connections": [
+          "GET /api/deals",
+          "PUT /api/deals/{id}",
+          "DELETE /api/deals/{id}"
+        ]
+      },
+      {
+        "name": "deal_detail_page",
+        "components": [
+          "deal_info_card",
+          "deal_edit_form",
+          "stage_progress_bar",
+          "related_activities_list",
+          "related_payments_list",
+          "notes_section"
+        ],
+        "api_connections": [
+          "GET /api/deals/{id}",
+          "PUT /api/deals/{id}",
+          "POST /api/notes"
+        ]
+      },
+      {
+        "name": "activities_page",
+        "components": [
+          "activities_timeline",
+          "add_activity_form",
+          "filter_panel",
+          "calendar_view"
+        ],
+        "api_connections": [
+          "GET /api/activities",
+          "POST /api/activities",
+          "PUT /api/activities/{id}",
+          "DELETE /api/activities/{id}"
+        ]
+      },
+      {
+        "name": "settings_page",
+        "components": [
+          "profile_form",
+          "password_change_form",
+          "user_management_table",
+          "payment_settings_form"
+        ],
+        "api_connections": [
+          "GET /api/auth/me",
+          "PUT /api/auth/me",
+          "PUT /api/auth/change_password",
+          "GET /api/users",
+          "PUT /api/users/{id}",
+          "DELETE /api/users/{id}"
+        ]
+      }
+    ]
+  },
+  "api": {
+    "endpoints": [
+      {
+        "path": "/api/auth/register",
+        "method": "POST",
+        "request_body": {
+          "first_name": "string",
+          "last_name": "string",
+          "email": "string",
+          "password": "string"
+        },
+        "response": {
+          "id": "integer",
+          "email": "string",
+          "token": "string"
+        },
+        "db_mapping": "users"
+      },
+      {
+        "path": "/api/auth/login",
+        "method": "POST",
+        "request_body": {
+          "email": "string",
+          "password": "string"
+        },
+        "response": {
+          "id": "integer",
+          "email": "string",
+          "token": "string",
+          "role": "string"
+        },
+        "db_mapping": "users"
+      },
+      {
+        "path": "/api/auth/logout",
+        "method": "POST",
+        "request_body": {},
+        "response": {
+          "message": "string"
+        },
+        "db_mapping": "users"
+      },
+      {
+        "path": "/api/auth/me",
+        "method": "GET",
+        "request_body": {},
+        "response": {
+          "id": "integer",
+          "first_name": "string",
+          "last_name": "string",
+          "email": "string",
+          "role": "string"
+        },
+        "db_mapping": "users"
+      },
+      {
+        "path": "/api/auth/me",
+        "method": "PUT",
+        "request_body": {
+          "first_name": "string",
+          "last_name": "string",
+          "email": "string"
+        },
+        "response": {
+          "id": "integer",
+          "first_name": "string",
+          "last_name": "string",
+          "email": "string"
+        },
+        "db_mapping": "users"
+      },
+      {
+        "path": "/api/auth/change_password",
+        "method": "PUT",
+        "request_body": {
+          "current_password": "string",
+          "new_password": "string"
+        },
+        "response": {
+          "message": "string"
+        },
+        "db_mapping": "users"
+      },
+      {
+        "path": "/api/users",
+        "method": "GET",
+        "request_body": {},
+        "response": {
+          "users": "array",
+          "total": "integer"
+        },
+        "db_mapping": "users"
+      },
+      {
+        "path": "/api/users/{id}",
+        "method": "PUT",
+        "request_body": {
+          "role": "string",
+          "is_active": "boolean"
+        },
+        "response": {
+          "id": "integer",
+          "role": "string",
+          "is_active": "boolean"
+        },
+        "db_mapping": "users"
+      },
+      {
+        "path": "/api/users/{id}",
+        "method": "DELETE",
+        "request_body": {},
+        "response": {
+          "message": "string"
+        },
+        "db_mapping": "users"
+      },
+      {
+        "path": "/api/contacts",
+        "method": "GET",
+        "request_body": {},
+        "response": {
+          "contacts": "array",
+          "total": "integer",
+          "page": "integer"
+        },
+        "db_mapping": "contacts"
+      },
+      {
+        "path": "/api/contacts",
+        "method": "POST",
+        "request_body": {
+          "first_name": "string",
+          "last_name": "string",
+          "email": "string",
+          "phone": "string",
+          "company_id": "integer",
+          "status": "string",
+          "source": "string"
+        },
+        "response": {
+          "id": "integer",
+          "first_name": "string",
+          "last_name": "string",
+          "email": "string"
+        },
+        "db_mapping": "contacts"
+      },
+      {
+        "path": "/api/contacts/{id}",
+        "method": "GET",
+        "request_body": {},
+        "response": {
+          "id": "integer",
+          "first_name": "string",
+          "last_name": "string",
+          "email": "string",
+          "phone": "string",
+          "company_id": "integer",
+          "status": "string",
+          "source": "string",
+          "owner_id": "integer",
+          "created_at": "timestamp",
+          "updated_at": "timestamp"
+        },
+        "db_mapping": "contacts"
+      },
+      {
+        "path": "/api/contacts/{id}",
+        "method": "PUT",
+        "request_body": {
+          "first_name": "string",
+          "last_name": "string",
+          "email": "string",
+          "phone": "string",
+          "company_id": "integer",
+          "status": "string",
+          "source": "string"
+        },
+        "response": {
+          "id": "integer",
+          "first_name": "string",
+          "last_name": "string",
+          "email": "string"
+        },
+        "db_mapping": "contacts"
+      },
+      {
+        "path": "/api/contacts/{id}",
+        "method": "DELETE",
+        "request_body": {},
+        "response": {
+          "message": "string"
+        },
+        "db_mapping": "contacts"
+      },
+      {
+        "path": "/api/companies",
+        "method": "GET",
+        "request_body": {},
+        "response": {
+          "companies": "array",
+          "total": "integer",
+          "page": "integer"
+        },
+        "db_mapping": "companies"
+      },
+      {
+        "path": "/api/companies",
+        "method": "POST",
+        "request_body": {
+          "name": "string",
+          "industry": "string",
+          "website": "string",
+          "phone": "string",
+          "address": "string",
+          "city": "string",
+          "country": "string"
+        },
+        "response": {
+          "id": "integer",
+          "name": "string"
+        },
+        "db_mapping": "companies"
+      },
+      {
+        "path": "/api/companies/{id}",
+        "method": "GET",
+        "request_body": {},
+        "response": {
+          "id": "integer",
+          "name": "string",
+          "industry": "string",
+          "website": "string",
+          "phone": "string",
+          "address": "string",
+          "city": "string",
+          "country": "string",
+          "created_at": "timestamp"
+        },
+        "db_mapping": "companies"
+      },
+      {
+        "path": "/api/companies/{id}",
+        "method": "PUT",
+        "request_body": {
+          "name": "string",
+          "industry": "string",
+          "website": "string",
+          "phone": "string",
+          "address": "string",
+          "city": "string",
+          "country": "string"
+        },
+        "response": {
+          "id": "integer",
+          "name": "string"
+        },
+        "db_mapping": "companies"
+      },
+      {
+        "path": "/api/companies/{id}",
+        "method": "DELETE",
+        "request_body": {},
+        "response": {
+          "message": "string"
+        },
+        "db_mapping": "companies"
+      },
+      {
+        "path": "/api/deals",
+        "method": "GET",
+        "request_body": {},
+        "response": {
+          "deals": "array",
+          "total": "integer",
+          "page": "integer"
+        },
+        "db_mapping": "deals"
+      },
+      {
+        "path": "/api/deals",
+        "method": "POST",
+        "request_body": {
+          "title": "string",
+          "value": "decimal",
+          "stage": "string",
+          "contact_id": "integer",
+          "company_id": "integer",
+          "expected_close_date": "date",
+          "description": "string"
+        },
+        "response": {
+          "id": "integer",
+          "title": "string",
+          "stage": "string"
+        },
+        "db_mapping": "deals"
+      },
+      {
+        "path": "/api/deals/{id}",
+        "method": "GET",
+        "request_body": {},
+        "response": {
+          "id": "integer",
+          "title": "string",
+          "value": "decimal",
+          "stage": "string",
+          "contact_id": "integer",
+          "company_id": "integer",
+          "owner_id": "integer",
+          "expected_close_date": "date",
+          "description": "string",
+          "created_at": "timestamp",
+          "updated_at": "timestamp"
+        },
+        "db_mapping": "deals"
+      },
+      {
+        "path": "/api/deals/{id}",
+        "method": "PUT",
+        "request_body": {
+          "title": "string",
+          "value": "decimal",
+          "stage": "string",
+          "expected_close_date": "date",
+          "description": "string"
+        },
+        "response": {
+          "id": "integer",
+          "title": "string",
+          "stage": "string"
+        },
+        "db_mapping": "deals"
+      },
+      {
+        "path": "/api/deals/{id}",
+        "method": "DELETE",
+        "request_body": {},
+        "response": {
+          "message": "string"
+        },
+        "db_mapping": "deals"
+      },
+      {
+        "path": "/api/activities",
+        "method": "GET",
+        "request_body": {},
+        "response": {
+          "activities": "array",
+          "total": "integer"
+        },
+        "db_mapping": "activities"
+      },
+      {
+        "path": "/api/activities",
+        "method": "POST",
+        "request_body": {
+          "type": "string",
+          "subject": "string",
+          "description": "string",
+          "contact_id": "integer",
+          "deal_id": "integer",
+          "due_date": "timestamp"
+        },
+        "response": {
+          "id": "integer",
+          "type": "string",
+          "subject": "string"
+        },
+        "db_mapping": "activities"
+      },
+      {
+        "path": "/api/activities/{id}",
+        "method": "PUT",
+        "request_body": {
+          "type": "string",
+          "subject": "string",
+          "description": "string",
+          "due_date": "timestamp",
+          "is_completed": "boolean"
+        },
+        "response": {
+          "id": "integer",
+          "type": "string",
+          "is_completed": "boolean"
+        },
+        "db_mapping": "activities"
+      },
+      {
+        "path": "/api/activities/{id}",
+        "method": "DELETE",
+        "request_body": {},
+        "response": {
+          "message": "string"
+        },
+        "db_mapping": "activities"
+      },
+      {
+        "path": "/api/notes",
+        "method": "GET",
+        "request_body": {},
+        "response": {
+          "notes": "array"
+        },
+        "db_mapping": "notes"
+      },
+      {
+        "path": "/api/notes",
+        "method": "POST",
+        "request_body": {
+          "content": "string",
+          "entity_type": "string",
+          "entity_id": "integer"
+        },
+        "response": {
+          "id": "integer",
+          "content": "string",
+          "entity_type": "string",
+          "entity_id": "integer"
+        },
+        "db_mapping": "notes"
+      },
+      {
+        "path": "/api/dashboard/stats",
+        "method": "GET",
+        "request_body": {},
+        "response": {
+          "total_contacts": "integer",
+          "total_deals": "integer",
+          "total_revenue": "decimal",
+          "open_activities": "integer",
+          "conversion_rate": "decimal",
+          "pending_payments": "integer"
+        },
+        "db_mapping": "contacts,deals,activities,payments"
+      },
+      {
+        "path": "/api/dashboard/recent_activities",
+        "method": "GET",
+        "request_body": {},
+        "response": {
+          "activities": "array"
+        },
+        "db_mapping": "activities"
+      },
+      {
+        "path": "/api/dashboard/pipeline",
+        "method": "GET",
+        "request_body": {},
+        "response": {
+          "stages": "array"
+        },
+        "db_mapping": "deals"
+      },
+      {
+        "path": "/api/dashboard/revenue",
+        "method": "GET",
+        "request_body": {},
+        "response": {
+          "monthly_revenue": "array",
+          "total_collected": "decimal",
+          "total_pending": "decimal"
+        },
+        "db_mapping": "payments"
+      }
+    ]
+  },
+  "database": {
+    "tables": {
+      "users": {
+        "fields": {
+          "id": "serial primary key",
+          "first_name": "varchar(100) not null",
+          "last_name": "varchar(100) not null",
+          "email": "varchar(255) unique not null",
+          "password_hash": "varchar(255) not null",
+          "role": "varchar(20) not null default 'sales_rep'",
+          "is_active": "boolean default true",
+          "created_at": "timestamp default now()",
+          "updated_at": "timestamp default now()"
+        },
+        "relations": []
+      },
+      "companies": {
+        "fields": {
+          "id": "serial primary key",
+          "name": "varchar(255) not null",
+          "industry": "varchar(100)",
+          "website": "varchar(255)",
+          "phone": "varchar(50)",
+          "address": "text",
+          "city": "varchar(100)",
+          "country": "varchar(100)",
+          "created_by": "integer references users(id)",
+          "created_at": "timestamp default now()",
+          "updated_at": "timestamp default now()"
+        },
+        "relations": [
+          "created_by -> users.id"
+        ]
+      },
+      "contacts": {
+        "fields": {
+          "id": "serial primary key",
+          "first_name": "varchar(100) not null",
+          "last_name": "varchar(100) not null",
+          "email": "varchar(255)",
+          "phone": "varchar(50)",
+          "company_id": "integer references companies(id) on delete set null",
+          "status": "varchar(20) default 'active'",
+          "source": "varchar(50)",
+          "owner_id": "integer references users(id)",
+          "created_at": "timestamp default now()",
+          "updated_at": "timestamp default now()"
+        },
+        "relations": [
+          "company_id -> companies.id",
+          "owner_id -> users.id"
+        ]
+      },
+      "deals": {
+        "fields": {
+          "id": "serial primary key",
+          "title": "varchar(255) not null",
+          "value": "decimal(12,2) default 0",
+          "stage": "varchar(30) not null default 'lead'",
+          "contact_id": "integer references contacts(id) on delete set null",
+          "company_id": "integer references companies(id) on delete set null",
+          "owner_id": "integer references users(id)",
+          "expected_close_date": "date",
+          "description": "text",
+          "created_at": "timestamp default now()",
+          "updated_at": "timestamp default now()"
+        },
+        "relations": [
+          "contact_id -> contacts.id",
+          "company_id -> companies.id",
+          "owner_id -> users.id"
+        ]
+      },
+      "activities": {
+        "fields": {
+          "id": "serial primary key",
+          "type": "varchar(30) not null",
+          "subject": "varchar(255) not null",
+          "description": "text",
+          "contact_id": "integer references contacts(id) on delete set null",
+          "deal_id": "integer references deals(id) on delete set null",
+          "owner_id": "integer references users(id)",
+          "due_date": "timestamp",
+          "is_completed": "boolean default false",
+          "created_at": "timestamp default now()",
+          "updated_at": "timestamp default now()"
+        },
+        "relations": [
+          "contact_id -> contacts.id",
+          "deal_id -> deals.id",
+          "owner_id -> users.id"
+        ]
+      },
+      "notes": {
+        "fields": {
+          "id": "serial primary key",
+          "content": "text not null",
+          "entity_type": "varchar(30) not null",
+          "entity_id": "integer not null",
+          "created_by": "integer references users(id)",
+          "created_at": "timestamp default now()"
+        },
+        "relations": [
+          "created_by -> users.id"
+        ]
+      }
+    }
+  },
+  "auth": {
+    "roles": {
+      "admin": "Full system access including user management, payments, and all CRUD",
+      "sales_rep": "Manage own contacts, deals, activities; view own payments only"
+    },
+    "permissions": {
+      "POST /api/auth/register": [
+        "admin"
+      ],
+      "POST /api/auth/login": [
+        "*"
+      ],
+      "POST /api/auth/logout": [
+        "admin",
+        "sales_rep"
+      ],
+      "GET /api/auth/me": [
+        "admin",
+        "sales_rep"
+      ],
+      "PUT /api/auth/me": [
+        "admin",
+        "sales_rep"
+      ],
+      "PUT /api/auth/change_password": [
+        "admin",
+        "sales_rep"
+      ],
+      "GET /api/users": [
+        "admin"
+      ],
+      "PUT /api/users/{id}": [
+        "admin"
+      ],
+      "DELETE /api/users/{id}": [
+        "admin"
+      ],
+      "GET /api/contacts": [
+        "admin",
+        "sales_rep"
+      ],
+      "POST /api/contacts": [
+        "admin",
+        "sales_rep"
+      ],
+      "GET /api/contacts/{id}": [
+        "admin",
+        "sales_rep"
+      ],
+      "PUT /api/contacts/{id}": [
+        "admin",
+        "sales_rep"
+      ],
+      "DELETE /api/contacts/{id}": [
+        "admin"
+      ],
+      "GET /api/companies": [
+        "admin",
+        "sales_rep"
+      ],
+      "POST /api/companies": [
+        "admin"
+      ],
+      "GET /api/companies/{id}": [
+        "admin",
+        "sales_rep"
+      ],
+      "PUT /api/companies/{id}": [
+        "admin"
+      ],
+      "DELETE /api/companies/{id}": [
+        "admin"
+      ],
+      "GET /api/deals": [
+        "admin",
+        "sales_rep"
+      ],
+      "POST /api/deals": [
+        "admin",
+        "sales_rep"
+      ],
+      "GET /api/deals/{id}": [
+        "admin",
+        "sales_rep"
+      ],
+      "PUT /api/deals/{id}": [
+        "admin",
+        "sales_rep"
+      ],
+      "DELETE /api/deals/{id}": [
+        "admin"
+      ],
+      "GET /api/activities": [
+        "admin",
+        "sales_rep"
+      ],
+      "POST /api/activities": [
+        "admin",
+        "sales_rep"
+      ],
+      "PUT /api/activities/{id}": [
+        "admin",
+        "sales_rep"
+      ],
+      "DELETE /api/activities/{id}": [
+        "admin"
+      ],
+      "GET /api/notes": [
+        "admin",
+        "sales_rep"
+      ],
+      "POST /api/notes": [
+        "admin",
+        "sales_rep"
+      ],
+      "GET /api/dashboard/stats": [
+        "admin",
+        "sales_rep"
+      ],
+      "GET /api/dashboard/recent_activities": [
+        "admin",
+        "sales_rep"
+      ],
+      "GET /api/dashboard/pipeline": [
+        "admin",
+        "sales_rep"
+      ],
+      "GET /api/dashboard/revenue": [
+        "admin"
+      ]
+    }
+  },
+  "business_logic": [
+    {
+      "rule": "password_hashing",
+      "description": "Passwords hashed with bcrypt; plaintext never stored"
+    },
+    {
+      "rule": "jwt_authentication",
+      "description": "All authenticated endpoints require valid JWT; 24h expiry"
+    },
+    {
+      "rule": "owner_scoping",
+      "description": "sales_rep sees only own records; manager and admin see all"
+    },
+    {
+      "rule": "deal_stage_validation",
+      "description": "Stage must be: lead, qualified, proposal, negotiation, closed_won, closed_lost"
+    },
+    {
+      "rule": "deal_stage_transition",
+      "description": "Forward-only pipeline movement; backward requires manager+"
+    },
+    {
+      "rule": "contact_status_values",
+      "description": "Status must be: active, inactive, lead, customer"
+    },
+    {
+      "rule": "activity_type_values",
+      "description": "Type must be: call, email, meeting, task, note"
+    },
+    {
+      "rule": "refund_only_completed",
+      "description": "Only completed payments can be refunded"
+    },
+    {
+      "rule": "cascade_delete_protection",
+      "description": "Company deletion sets company_id null on contacts and deals"
+    },
+    {
+      "rule": "email_uniqueness",
+      "description": "User emails unique; contact emails not required unique"
+    },
+    {
+      "rule": "pagination_default",
+      "description": "List endpoints paginated: default page_size=20, max=100"
+    },
+    {
+      "rule": "audit_timestamps",
+      "description": "created_at on insert, updated_at on every update"
+    },
+    {
+      "rule": "soft_delete_users",
+      "description": "Users deactivated (is_active=false) not deleted"
+    }
+  ],
+  "validation_report": {
+    "valid": false,
+    "issues_found": [],
+    "repairs_applied": []
+  }
+}
