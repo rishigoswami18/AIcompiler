@@ -435,5 +435,6 @@ def main():
     elif "Settings" in page:
         show_settings()
 
-if __name__ == "__main__":
-    main()
+main()
+
+
